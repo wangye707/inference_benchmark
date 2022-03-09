@@ -28,16 +28,6 @@ def parse_args():
         type=str,
         default="paddle_manylinux_devel:cuda11.2-cudnn8.2.1-trt8.0.3.4-gcc82",
         help="docker name")
-    parser.add_argument(
-        "--paddle_version",
-        type=str,
-        default="0.0.0",
-        help="paddle_tag/paddle_commit")
-    parser.add_argument(
-        "--onnxruntime_version",
-        type=str,
-        default="0.0.0",
-        help="onnxruntime_tag/onnxruntime_commit")
 
     return parser.parse_args()
 
