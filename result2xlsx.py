@@ -152,7 +152,7 @@ def data_merging(env, paddle_version, onnxruntime_version,
                 log_dict["gpu_mem_gap"] = calculation_gap(
                     paddle_num=log_dict["paddle_gpu_mem"],
                     onnxruntime_num=log_dict["onnxruntime_gpu_mem"])
-                log_dict["perf_mem_gap"] = calculation_gap(
+                log_dict["perf_gap"] = calculation_gap(
                     paddle_num=log_dict["paddle_avg_cost"],
                     onnxruntime_num=log_dict["onnxruntime_avg_cost"])
                 log_dict["paddle2onnx_model_convert"] = "Failed"
@@ -190,7 +190,7 @@ def main(args, result_path, tipc_benchmark_excel_path):
         "cpu_threads", "enable_gpu", "enable_trt", "paddle2onnx_model_convert",
         "onnxruntime_cpu_mem", "paddle_cpu_mem", "paddle_gpu_mem",
         "onnxruntime_gpu_mem", "onnxruntime_avg_cost", "paddle_avg_cost",
-        "cpu_mem_gap", "gpu_mem_gap", "perf_mem_gap"
+        "cpu_mem_gap", "gpu_mem_gap", "perf_gap"
     ])
 
     log_list = log_split(result_path)
