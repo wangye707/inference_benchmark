@@ -1,21 +1,25 @@
 echo ">>> Donwnload model link url ..."
 wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url.txt
-
+dir=$(pwd)
 echo ">>> Donwnload model ..."
 cd Models
 cat ../tipc_models_url.txt | while read line
 do
     wget -q $line
     tar -xf *tgz
-    cd norm_train_gpus_0,1_autocast_null_upload
-    whole_name=$(ls *txt)
-    echo ${whole_name%%_train_infer*}
-    model_name=${whole_name%%_train_infer*}
-    cd ..
-    mv norm_train_gpus_0,1_autocast_null_upload ${model_name}
-    rm -rf *tgz
+    if [ $? -eq 0 ]; then
+        cd norm_train_gpus_0,1_autocast_null_upload
+        whole_name=$(ls *txt)
+        echo ${whole_name%%_train_infer*}
+        model_name=${whole_name%%_train_infer*}
+        cd ${dir}/Models
+        mv norm_train_gpus_0,1_autocast_null_upload ${model_name}
+        rm -rf *tgz
+    else
+        echo "${$line} decompression failed"
+    fi
 done
-
+cd ${dir}
 echo ">>> Generate yaml configuration file ..."
 bash prepare_config.sh
 
