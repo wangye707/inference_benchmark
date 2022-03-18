@@ -3,7 +3,7 @@ wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_
 dir=$(pwd)
 echo ">>> Donwnload model ..."
 cd Models
-cat ../tipc_models_url.txt | while read line
+cat ../tipc_models_url_03_14.txt | while read line
 do
     wget -q $line
     tar -xf *tgz
