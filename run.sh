@@ -1,5 +1,5 @@
 echo ">>> Donwnload model link url ..."
-wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url.txt
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_03_14.txt
 dir=$(pwd)
 echo ">>> Donwnload model ..."
 cd Models
