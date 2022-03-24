@@ -1,23 +1,30 @@
-echo ">>> Donwnload model link url ..."
-wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_03_14.txt
+echo ">>> Download model link url ..."
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleDetection_latest.txt
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleGAN_latest.txt
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleOCR_latest.txt
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleVideo_latest.txt
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleSeg_latest.txt
+
 dir=$(pwd)
-echo ">>> Donwnload model ..."
+paddle_reop_list=(PaddleDetection PaddleGAN PaddleOCR PaddleVideo PaddleSeg)
+echo ">>> Download model ..."
 cd Models
-cat ../tipc_models_url_03_14.txt | while read line
-do
-    wget -q $line
-    tar -xf *tgz
-    if [ $? -eq 0 ]; then
-        cd norm_train_gpus_0,1_autocast_null_upload
-        whole_name=$(ls *txt)
-        echo ${whole_name%%_train_infer*}
-        model_name=${whole_name%%_train_infer*}
-        cd ${dir}/Models
-        mv norm_train_gpus_0,1_autocast_null_upload ${model_name}
-        rm -rf *tgz
-    else
-        echo "${$line} decompression failed"
-    fi
+for paddle_repo in ${paddle_reop_list[@]};do
+    paddle_repo_url="tipc_models_url_${paddle_repo}_latest.txt"
+    echo ">>> ${paddle_repo} model download and decompression..."
+    cat ${dir}/${paddle_repo_url} | while read line
+    do
+        wget -q $line
+        tar -xf *tgz
+        if [ $? -eq 0 ]; then
+            rm -rf *tgz
+            model_name=$(ls |grep _upload)
+            mv ${model_name} ${model_name%_upload*}
+            echo ${model_name%_upload*}
+        else
+            echo "${$line} decompression failed"
+        fi
+    done
 done
 cd ${dir}
 echo ">>> Generate yaml configuration file ..."
