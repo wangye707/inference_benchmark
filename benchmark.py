@@ -86,6 +86,14 @@ class GPUStat(GPUStatBase):
     def output(self):
         return self.result
 
+    def device_name(self):
+        try:
+            cmd = "nvidia-smi --id=%s --query-gpu=name --format=csv,noheader,nounits" % (
+                self.gpu_id)
+            return os.system(cmd)
+        except Exception as e:
+            return ""
+
 
 def str2bool(v):
     if v.lower() == 'true':
@@ -145,6 +153,8 @@ def get_backend(backend):
 
 
 def parse_time(time_data, result_dict):
+    if len(time_data) == 0:
+        return result_dict
     percentiles = [50., 80., 90., 95., 99., 99.9]
     buckets = np.percentile(time_data, percentiles).tolist()
     buckets_str = ",".join([
@@ -174,12 +184,13 @@ class BenchmarkRunner():
         self.compute_time = []
         self.backend = None
         self.conf = None
+        self.gpu_stat = None
 
     def preset(self):
-        self.backend = get_backend(self.conf.backend_type)
-        self.backend.load(self.conf)
         self.gpu_stat = GPUStat(self.conf.gpu_id)
         self.gpu_stat.start()
+        self.backend = get_backend(self.conf.backend_type)
+        self.backend.load(self.conf)
 
     def run(self):
         if self.conf.return_result:
@@ -200,16 +211,19 @@ class BenchmarkRunner():
             run_count = run_count + 1
             self.time_data.append(local_time)
 
-    def report(self):
-        self.gpu_stat.stop()
+    def report(self, status=True):
         perf_result = {}
-        parse_time(self.time_data, perf_result)
+        if self.gpu_stat is not None:
+            self.gpu_stat.stop()
+            parse_time(self.time_data, perf_result)
 
         print('##### benchmark result: #####')
         result = {}
         result['model_name'] = self.conf.model_dir.split('/')[-1]
+        result['status'] = 'success' if status else 'failure'
         result['detail'] = perf_result
-        result['avg_cost'] = perf_result['result']['avg_cost']
+        result['avg_cost'] = perf_result['result'][
+            'avg_cost'] if perf_result else 0
         result['h2d_cost'] = float(format(np.mean(
             self.h2d_time), '.6f')) if len(self.h2d_time) > 0 else 0
         result['d2h_cost'] = float(format(np.mean(
@@ -217,10 +231,13 @@ class BenchmarkRunner():
         result['compute_cost'] = float(
             format(np.mean(self.compute_time), '.6f')) if len(
                 self.compute_time) > 0 else 0
-        result['gpu_stat'] = self.gpu_stat.output()
+        result['gpu_stat'] = self.gpu_stat.output(
+        ) if self.gpu_stat is not None else {}
         if self.conf.enable_gpu:
-            result['device_name'] = result['gpu_stat']['name']
-            result['gpu_mem'] = result['gpu_stat']['memory.used']
+            result['device_name'] = result['gpu_stat']['name'] if result[
+                'gpu_stat'] else self.gpu_stat.device_name()
+            result['gpu_mem'] = result['gpu_stat']['memory.used'] if result[
+                'gpu_stat'] else 0
         result['backend_type'] = self.conf.backend_type
         result['batch_size'] = self.conf.batch_size
         result['precision'] = self.conf.precision
@@ -259,9 +276,15 @@ class BenchmarkRunner():
         test_num = len(self.conf.yaml_config["input_shape"]["0"]["shape"])
         for i in range(test_num):
             self.conf.test_num = i
-            self.preset()
-            self.run()
-            self.report()
+            try:
+                self.preset()
+                self.run()
+                self.report()
+            except Exception as e:
+                self.report(False)
+                print(e)
+                log.info("{}: {} benchmark failed!".format(
+                    self.conf.model_dir, self.conf.backend_type))
 
 
 def main():

@@ -2,7 +2,7 @@ export PYTHON_CMD=python
 export BASEPATH=$(cd `dirname $0`; pwd)
 export MODELPATH="$BASEPATH/Models"
 install_repo(){
-  $PYTHON_CMD -m pip uninstall paddle2onnx
+  $PYTHON_CMD -m pip uninstall paddle2onnx --yes
   cd "$BASEPATH"
   rm -rf Paddle2ONNX
   git clone https://github.com/PaddlePaddle/Paddle2ONNX.git
@@ -46,6 +46,10 @@ do
       cd $CONVERTPATH
       echo "$model_file"
       paddle2onnx --model_dir ./  --save_file model.onnx --opset_version 13 --enable_onnx_checker True
+      if [[ "$?" != 0 ]]; then
+          echo $CONVERTPATH": convert failed(paddle2onnx failed!)"
+          continue
+      fi
       cd $BASEPATH
   fi
   if [ "${model_file##*.}"x = "pdmodel"x ];then
@@ -55,6 +59,10 @@ do
     else
       paddle2onnx --model_dir ./  --model_filename "$model_file" --params_filename "$params_file" --save_file model.onnx --opset_version 13 --enable_onnx_checker True
     fi  
+    if [[ "$?" != 0 ]]; then
+        echo $CONVERTPATH": convert failed(paddle2onnx failed!)"
+        continue
+    fi
     cd $BASEPATH
     $PYTHON_CMD model_check.py --config_file config.yaml --model_dir "$CONVERTPATH" --paddle_model_file "$model_file" --paddle_params_file "$params_file"
   fi
