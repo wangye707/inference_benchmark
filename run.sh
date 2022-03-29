@@ -1,4 +1,5 @@
 echo ">>> Download model link url ..."
+wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleClas_latest.txt
 wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleDetection_latest.txt
 wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleGAN_latest.txt
 wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleOCR_latest.txt
@@ -6,7 +7,7 @@ wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_
 wget https://paddle-qa.bj.bcebos.com/fullchain_ce_test/model_download_link/tipc_models_url_PaddleSeg_latest.txt
 
 dir=$(pwd)
-paddle_reop_list=(PaddleDetection PaddleGAN PaddleOCR PaddleVideo PaddleSeg)
+paddle_reop_list=(PaddleClas PaddleDetection PaddleGAN PaddleOCR PaddleVideo PaddleSeg)
 echo ">>> Download model ..."
 cd Models
 for paddle_repo in ${paddle_reop_list[@]};do
